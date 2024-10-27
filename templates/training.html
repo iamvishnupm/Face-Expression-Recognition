@@ -1,0 +1,261 @@
+{% extends 'base.html' %}
+{% block content %}
+<main class="container mx-auto px-4 py-8 max-w-4xl">
+  <article class="bg-gray-800 rounded-lg shadow-lg p-8 border border-gray-700">
+    <!-- Title Section -->
+    <div class="mb-8">
+      <h2 class="text-3xl font-bold text-white mb-4">Custom model creation</h2>
+      <!-- <div class="text-gray-400">
+        Date: <time>October 25, 2024</time>
+      </div> -->
+    </div>
+    <!-- Rich Text Editor Container -->
+    <div class="prose prose-invert max-w-none">
+      <div class="text-white space-y-6">
+        <p class="text-gray-300">
+
+          <strong class="block mt-6" style="font-size: 1.5rem; color: #3399FF; font-weight: bold;">
+            Explanation:
+          </strong>
+
+          <strong class="block mt-6">1. Importing Required Libraries:</strong>
+          <div class="bg-gray-700 p-3 rounded-md my-2">
+            <code class="block font-mono text-sm text-gray-200">
+              import torch<br />
+              import torch.nn as nn<br />
+              from torchvision import models
+            </code>
+            <!-- Comment: Imports necessary libraries for PyTorch (torch, nn) and pre-trained models (torchvision models). -->
+          </div>
+
+          <strong class="block mt-6">2. Defining the Custom Model Class:</strong>
+          <div class="bg-gray-700 p-3 rounded-md my-2">
+            <code class="block font-mono text-sm text-gray-200">
+              class CustomModel(nn.Module):<br /><br />
+              &nbsp;&nbsp;&nbsp;def __init__(self, num_classes):<br />
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;super(CustomModel, self).__init__()
+            </code>
+            <!-- Comment: Defines a new class CustomModel, inheriting from nn.Module, which will initialize a MobileNet model, define new layers, and modify forward propagation for classification. -->
+          </div>
+
+          <strong class="block mt-6">3. Initializing Layers in the Constructor:</strong>
+          <div class="bg-gray-700 p-3 rounded-md my-2">
+            <code class="block font-mono text-sm text-gray-200">
+              self.mobnet = self.init_model()<br />
+              self.num_classes = num_classes<br /><br />
+              self.fc1 = nn.Linear(1280, 64)<br />
+              self.bn1 = nn.BatchNorm1d(64)<br />
+              self.drop1 = nn.Dropout(0.5)<br /><br />
+              self.fc2 = nn.Linear(64, 32)<br />
+              self.bn2 = nn.BatchNorm1d(32)<br />
+              self.drop2 = nn.Dropout(0.5)<br /><br />
+              self.fc3 = nn.Linear(32, 16)<br />
+              self.bn3 = nn.BatchNorm1d(16)<br />
+              self.drop3 = nn.Dropout(0.5)<br /><br />
+              self.out = nn.Linear(16, self.num_classes)
+            </code>
+            <!-- Comment: Initializes the MobileNet model, several fully connected (fc) layers with batch normalization (bn) and dropout layers to prevent overfitting. The final output layer 'out' has the number of units equal to num_classes. -->
+          </div>
+
+          <strong class="block mt-6">4. Setting up the MobileNet Model:</strong>
+          <div class="bg-gray-700 p-3 rounded-md my-2">
+            <code class="block font-mono text-sm text-gray-200">
+              def init_model(self):<br />
+              &nbsp;&nbsp;&nbsp;model = models.mobilenet_v2(weights="DEFAULT")<br />
+              &nbsp;&nbsp;&nbsp;model.features[0][0] = nn.Conv2d(3, 32, kernel_size=3, stride=1, padding=1)<br />
+              &nbsp;&nbsp;&nbsp;model.classifier = nn.Identity()
+            </code>
+            <!-- Comment: Initializes the MobileNet V2 model with default weights and adjusts the first convolutional layer to fit 3-channel (RGB) input images. It also removes the classifier layer to allow for custom classification layers. -->
+          </div>
+
+          <strong class="block mt-6">5. Freezing Specific Layers:</strong>
+          <div class="bg-gray-700 p-3 rounded-md my-2">
+            <code class="block font-mono text-sm text-gray-200">
+              for layer in list(model.children())[0][:6]:<br />
+              &nbsp;&nbsp;&nbsp;for param in layer.parameters():<br />
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;param.requires_grad = False<br /><br />
+
+              for layer in list(model.children())[0][6:]:<br />
+              &nbsp;&nbsp;&nbsp;for param in layer.parameters():<br />
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;param.requires_grad = True
+            </code>
+            <!-- Comment: Freezes layers in the MobileNet feature extractor's first six layers to retain pre-trained features, while the remaining layers are trainable for task-specific fine-tuning. -->
+          </div>
+
+          <strong class="block mt-6">6. Forward Propagation:</strong>
+          <div class="bg-gray-700 p-3 rounded-md my-2">
+            <code class="block font-mono text-sm text-gray-200">
+              def forward(self, x):<br /><br />
+
+              &nbsp;&nbsp;&nbsp;x = self.mobnet(x)<br />
+              &nbsp;&nbsp;&nbsp;x = torch.flatten(x, 1)
+            </code>
+            <!-- Comment: Passes the input 'x' through the MobileNet model, and flattens the output to feed it into the fully connected layers. -->
+          </div>
+
+          <strong class="block mt-6">7. Passing through Fully Connected Layers:</strong>
+          <div class="bg-gray-700 p-3 rounded-md my-2">
+            <code class="block font-mono text-sm text-gray-200">
+              x = self.fc1(x)<br />
+              x = self.bn1(x)<br />
+              x = nn.functional.relu(x)<br />
+              x = self.drop1(x)<br /><br />
+
+              x = self.fc2(x)<br />
+              x = self.bn2(x)<br />
+              x = nn.functional.relu(x)<br />
+              x = self.drop2(x)<br /><br />
+
+              x = self.fc3(x)<br />
+              x = self.bn3(x)<br />
+              x = nn.functional.relu(x)<br />
+              x = self.drop3(x)
+            </code>
+            <!-- Comment: Passes the data through three fully connected layers, each followed by batch normalization, ReLU activation, and dropout for effective learning and regularization. -->
+          </div>
+
+          <strong class="block mt-6">8. Output Layer:</strong>
+          <div class="bg-gray-700 p-3 rounded-md my-2">
+            <code class="block font-mono text-sm text-gray-200">
+              x = self.out(x)<br />
+              return x
+            </code>
+            <!-- Comment: Passes the processed data through the final output layer to obtain the class scores. Returns 'x' as the prediction output. -->
+          </div>
+        </p>
+      </div>
+    </div>
+  </article><br/>
+  <article class="bg-gray-800 rounded-lg shadow-lg p-8 border border-gray-700">
+    <!-- Title Section -->
+    <div class="mb-8">
+      <h2 class="text-3xl font-bold text-white mb-4">Training the model</h2>
+      <!-- <div class="text-gray-400">
+        Date: <time>October 23, 2024</time>
+      </div> -->
+    </div>
+
+    <!-- Rich Text Editor Container -->
+    <div class="prose prose-invert max-w-none">
+      <div class="text-white space-y-6">
+        <!-- Code Explanation -->
+        <p class="text-gray-300">
+          <strong class="block mt-6" style="font-size: 1.5rem; color: #3399FF; font-weight: bold;">
+            Explanation:
+          </strong>
+
+          <strong class="block mt-6">1. Importing Libraries:</strong>
+        <div class="bg-gray-700 p-3 rounded-md my-2">
+          <code class="block font-mono text-sm text-gray-200">
+                import torch<br />
+                import torch.nn as nn<br />
+                from torchvision import models
+              </code>
+          These lines import the necessary PyTorch and TorchVision libraries for building and using models.
+        </div>
+
+        <strong class="block mt-6">2. Checking GPU Availability:</strong>
+        <div class="bg-gray-700 p-3 rounded-md my-2">
+          <code class="block font-mono text-sm text-gray-200">
+                torch.cuda.is_available()<br />
+                device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')<br />
+                device
+              </code>
+          This checks if a GPU is available and sets the device accordingly. It will return either <code>cuda</code>
+          or <code>cpu</code>.
+        </div>
+
+        <strong class="block mt-6">3. Importing Custom Model:</strong>
+        <div class="bg-gray-700 p-3 rounded-md my-2">
+          <code class="block font-mono text-sm text-gray-200">
+                from my_model import CustomModel<br />
+                model = CustomModel(7)<br />
+                model = model.to(device)
+              </code>
+          This imports a custom model, initializes it with 7 output classes, and transfers it to the chosen device.
+        </div>
+
+        <strong class="block mt-6">4. Image Transformations:</strong>
+        <div class="bg-gray-700 p-3 rounded-md my-2">
+          <code class="block font-mono text-sm text-gray-200">
+                from torchvision import datasets, transforms<br />
+                from torch.utils.data import DataLoader, random_split<br />
+                transform = transforms.Compose([<br />
+                &nbsp;&nbsp;&nbsp;transforms.Resize((128, 128)),<br />
+                &nbsp;&nbsp;&nbsp;transforms.ToTensor(),<br />
+                &nbsp;&nbsp;&nbsp;transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])<br />
+                ])
+              </code>
+          This pipeline applies transformations like resizing images to 128x128 pixels, converting them to tensors,
+          and normalizing with ImageNet statistics.
+        </div>
+
+        <strong class="block mt-6">5. Loading Dataset:</strong>
+        <div class="bg-gray-700 p-3 rounded-md my-2">
+          <code class="block font-mono text-sm text-gray-200">
+                dataset = datasets.ImageFolder(root='C:/Users/Rey/Desktop/Projects/raf-db/train', transform=transform)<br />
+                train_loader = DataLoader(dataset, batch_size=32, shuffle=True, num_workers=4, pin_memory=True)
+              </code>
+          Loads the image dataset from the given folder, applies transformations, and creates batches of size 32 for
+          training, with shuffling.
+        </div>
+
+        <strong class="block mt-6">6. Defining Loss Function and Optimizer:</strong>
+        <div class="bg-gray-700 p-3 rounded-md my-2">
+          <code class="block font-mono text-sm text-gray-200">
+                loss_fn = nn.CrossEntropyLoss()<br />
+                optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
+              </code>
+          This sets the loss function to cross-entropy (good for classification) and defines the optimizer using the
+          Adam algorithm with a learning rate of 0.0001.
+        </div>
+
+        <strong class="block mt-6">7. Training the Model:</strong>
+        <div class="bg-gray-700 p-3 rounded-md my-2">
+          <code class="block font-mono text-sm text-gray-200">
+                num_epochs = 50<br />
+                for i in range(num_epochs):<br />
+                &nbsp;&nbsp;&nbsp;model.train()<br />
+                &nbsp;&nbsp;&nbsp;...
+              </code>
+          Loops for 50 epochs. Inside the loop, the model is set to training mode with <code>model.train()</code>, and
+          backpropagation with optimization happens after calculating loss.
+        </div>
+
+        <strong class="block mt-6">8. Validation:</strong>
+        <div class="bg-gray-700 p-3 rounded-md my-2">
+          <code class="block font-mono text-sm text-gray-200">
+                model.eval()<br />
+                with torch.no_grad():<br />
+                &nbsp;&nbsp;&nbsp;...
+              </code>
+          The model is set to evaluation mode with <code>model.eval()</code>. The <code>torch.no_grad()</code> block
+          disables gradient calculation for faster performance.
+        </div>
+
+        <strong class="block mt-6">9. Saving and Loading the Model:</strong>
+        <div class="bg-gray-700 p-3 rounded-md my-2">
+          <code class="block font-mono text-sm text-gray-200">
+                torch.save(model.state_dict(), 'model_state_dict.pth')<br />
+                model.load_state_dict(torch.load('model_state_dict.pth'))
+              </code>
+          This saves the model’s weights to a file and reloads them later using the state dictionary.
+        </div>
+
+        <strong class="block mt-6">10. Prediction:</strong>
+        <div class="bg-gray-700 p-3 rounded-md my-2">
+          <code class="block font-mono text-sm text-gray-200">
+                from PIL import Image<br />
+                image = Image.open('C:/Users/Rey/Desktop/Projects/raf-db/pred/ang.jpg')<br />
+                image = tform(image).unsqueeze(0)<br />
+                ...
+              </code>
+          Opens an image for prediction, applies the same transformations as in training, and makes a prediction using
+          the trained model.
+        </div>
+        </p>
+      </div>
+    </div>
+  </article><br/>
+</main>
+{% endblock %}

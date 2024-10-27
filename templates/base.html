@@ -1,0 +1,25 @@
+<!-- templates/base.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Face Expression Recognition{% endblock %}</title>
+    {% load static %}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="{% block body_class %}h-screen flex flex-col bg-gray-900{% endblock %}">
+    <!-- Header -->
+    <header class="w-full bg-blue-900 p-6 shadow-lg border-b border-blue-700">
+        <h1 class="text-white text-center text-3xl md:text-4xl font-bold">
+            Face Expression Recognition
+        </h1>
+    </header>
+
+    {% block content %}
+    {% endblock %}
+
+    {% block extra_js %}
+    {% endblock %}
+</body>
+</html>

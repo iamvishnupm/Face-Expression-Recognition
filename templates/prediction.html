@@ -1,0 +1,292 @@
+{% extends 'base.html' %}
+{% block content %}
+<main class="container mx-auto px-4 py-8 max-w-4xl">
+  <article class="bg-gray-800 rounded-lg shadow-lg p-8 border border-gray-700">
+    <!-- Title Section -->
+    <div class="mb-8">
+      <h2 class="text-3xl font-bold text-white mb-4">Prediction script explanation</h2>
+      <!-- <div class="text-gray-400">
+        Published: <time>October 25, 2024</time>
+      </div> -->
+    </div>
+
+    <!-- Rich Text Editor Container -->
+    <div class="prose prose-invert max-w-none">
+      <div class="text-white space-y-6">
+        <p class="text-gray-300">
+
+          <strong class="block mt-6" style="font-size: 1.5rem; color: #3399FF; font-weight: bold;">
+            Explanation:
+          </strong>
+
+          <strong class="block mt-6">1. Importing Libraries:</strong>
+          <div class="bg-gray-700 p-3 rounded-md my-2">
+            <code class="block font-mono text-sm text-gray-200">
+              import os<br />
+              import cv2<br />
+              import numpy as np<br /><br />
+              import torch<br />
+              from .models import CustomMobileNet
+            </code>
+            <!-- Comment: Imports essential libraries for file handling, image processing, NumPy, PyTorch, and a custom model (MobileNet) for predictions. -->
+          </div>
+
+          <strong class="block mt-6">2. Checking GPU Availability:</strong>
+          <div class="bg-gray-700 p-3 rounded-md my-2">
+            <code class="block font-mono text-sm text-gray-200">
+              torch.cuda.is_available()<br /><br />
+              device = torch.device("cuda" if torch.cuda.is_available() else "cpu")<br />
+              device
+            </code>
+            <!-- Comment: Checks if a GPU (CUDA) is available and sets the device to GPU or CPU based on the result. -->
+          </div>
+
+          <strong class="block mt-6">3. Loading the Pre-Trained Model:</strong>
+          <div class="bg-gray-700 p-3 rounded-md my-2">
+            <code class="block font-mono text-sm text-gray-200">
+              model = CustomMobileNet(7)<br />
+              model = torch.load("model.pth")<br />
+              model = model.to(device)
+            </code>
+            <!-- Comment: Loads the pre-trained MobileNet model for 7 output classes, then transfers the model to the appropriate device (GPU or CPU). -->
+          </div>
+
+          <strong class="block mt-6">4. Listing Image Files for Prediction:</strong>
+          <div class="bg-gray-700 p-3 rounded-md my-2">
+            <code class="block font-mono text-sm text-gray-200">
+              path = "C:/Users/Rey/Desktop/Projects/raf-db/pred"<br />
+              img_list = os.listdir(path)<br />
+              img_list
+            </code>
+            <!-- Comment: Specifies the path containing images for prediction and retrieves a list of all files (images) in that directory. -->
+          </div>
+
+          <strong class="block mt-6">5. Defining Image Transformation Pipeline:</strong>
+          <div class="bg-gray-700 p-3 rounded-md my-2">
+            <code class="block font-mono text-sm text-gray-200">
+              from PIL import Image<br />
+              from torchvision import transforms<br /><br />
+              transform = transforms.Compose([<br />
+              &nbsp;&nbsp;&nbsp;transforms.Resize((128, 128)),<br />
+              &nbsp;&nbsp;&nbsp;transforms.ToTensor(),<br />
+              &nbsp;&nbsp;&nbsp;transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])<br />
+              ])
+            </code>
+            <!-- Comment: Defines a series of image transformations: resize the image to 128x128, convert it to a tensor, and normalize it using pre-defined mean and standard deviation values (ImageNet stats). -->
+          </div>
+
+          <strong class="block mt-6">6. Label Mapping:</strong>
+          <div class="bg-gray-700 p-3 rounded-md my-2">
+            <code class="block font-mono text-sm text-gray-200">
+              labels = ["angry", "disgust", "fear", "happy", "neutral", "sad", "surprise"]
+            </code>
+            <!-- Comment: Defines a list of emotion labels corresponding to the model's output classes. -->
+          </div>
+
+          <strong class="block mt-6">7. Displaying Images with Predictions:</strong>
+          <div class="bg-gray-700 p-3 rounded-md my-2">
+            <code class="block font-mono text-sm text-gray-200">
+              from matplotlib import pyplot<br /><br />
+
+              fig, axes = pyplot.subplots(nrows=1, ncols=7, figsize=(56, 8))<br /><br />
+
+              for img, ax in zip(img_list, axes.flatten()):<br />
+              &nbsp;&nbsp;&nbsp;img_path = os.path.join(path, img)<br />
+              &nbsp;&nbsp;&nbsp;image = Image.open(img_path)<br />
+              &nbsp;&nbsp;&nbsp;ax.imshow(image)
+            </code>
+            <!-- Comment: Sets up a plot with 7 subplots to display images from the directory and initializes each subplot with an image. -->
+          </div>
+
+          <strong class="block mt-6">8. Preparing Images for Prediction:</strong>
+          <div class="bg-gray-700 p-3 rounded-md my-2">
+            <code class="block font-mono text-sm text-gray-200">
+              image = transform(image).unsqueeze(0)<br />
+              image = image.to(device)
+            </code>
+            <!-- Comment: Applies the transformations to the image, adds an extra batch dimension (unsqueeze), and moves the image tensor to the selected device. -->
+          </div>
+
+          <strong class="block mt-6">9. Running Model Inference:</strong>
+          <div class="bg-gray-700 p-3 rounded-md my-2">
+            <code class="block font-mono text-sm text-gray-200">
+              with torch.no_grad():<br />
+              &nbsp;&nbsp;&nbsp;out = model(image)<br />
+              &nbsp;&nbsp;&nbsp;_, pred = torch.max(out, 1)
+            </code>
+            <!-- Comment: Disables gradient calculations (for inference), makes predictions using the model, and retrieves the index of the class with the highest probability. -->
+          </div>
+
+          <strong class="block mt-6">10. Displaying Predicted Labels:</strong>
+          <div class="bg-gray-700 p-3 rounded-md my-2">
+            <code class="block font-mono text-sm text-gray-200">
+              ax.set_xlabel(labels[pred.item()], fontsize=60)
+            </code>
+            <!-- Comment: Sets the label for each subplot (image) with the predicted emotion label. -->
+          </div>
+
+          <strong class="block mt-6">11. Displaying the Plot:</strong>
+          <div class="bg-gray-700 p-3 rounded-md my-2">
+            <code class="block font-mono text-sm text-gray-200">
+              pyplot.tight_layout()<br />
+              pyplot.show()
+            </code>
+            <!-- Comment: Adjusts the layout for better spacing and displays the plot with images and corresponding predictions. -->
+          </div>
+        </p>
+      </div>
+    </div>
+  </article><br/>
+  <article class="bg-gray-800 rounded-lg shadow-lg p-8 border border-gray-700">
+    <!-- Title Section -->
+    <div class="mb-8">
+      <h2 class="text-3xl font-bold text-white mb-4">Video Prediction Code Explanation</h2>
+      <!-- <div class="text-gray-400">
+        Published: <time>October 25, 2024</time>
+      </div> -->
+    </div>
+
+    <div class="prose prose-invert max-w-none">
+      <div class="text-white space-y-6">
+        <p class="text-gray-300">
+
+          <strong class="block mt-6" style="font-size: 1.5rem; color: #3399FF; font-weight: bold;">Code Explanation:</strong>
+
+          <strong class="block mt-6">1. Importing Required Libraries:</strong>
+          <div class="bg-gray-700 p-3 rounded-md my-2">
+            <code class="block font-mono text-sm text-gray-200">
+              import os<br />
+              import cv2<br />
+              import torch<br />
+              from PIL import Image<br />
+              from .my_model import CustomModel<br />
+              from torchvision import transforms<br />
+              from django.contrib.staticfiles.storage import staticfiles_storage<br />
+              from django.conf import settings
+            </code>
+            <!-- Comment: Imports essential libraries for operating system functions, computer vision (OpenCV), PyTorch, and Django for accessing media paths and settings. -->
+          </div>
+
+          <strong class="block mt-6">2. Setting up Paths for Haar Cascade and Model:</strong>
+          <div class="bg-gray-700 p-3 rounded-md my-2">
+            <code class="block font-mono text-sm text-gray-200">
+              hcf_path = os.path.join(settings.MEDIA_ROOT, "haarcascade_frontalface_default.xml")<br />
+              model_path = os.path.join(settings.MEDIA_ROOT, "model_state_dict.pth")
+            </code>
+            <!-- Comment: Defines paths for the Haar Cascade classifier XML file and the saved model state dictionary (.pth file) by joining the media root directory specified in Django settings. -->
+          </div>
+
+          <strong class="block mt-6">3. Function for Video Prediction:</strong>
+          <div class="bg-gray-700 p-3 rounded-md my-2">
+            <code class="block font-mono text-sm text-gray-200">
+              def video_prediction(frame):<br />
+              &nbsp;&nbsp;&nbsp;device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            </code>
+            <!-- Comment: Defines a function 'video_prediction' that accepts a video frame as input. Sets the device for computation to GPU if available, otherwise defaults to CPU. -->
+          </div>
+
+          <strong class="block mt-6">4. Initializing the Face Detector and Loading Model:</strong>
+          <div class="bg-gray-700 p-3 rounded-md my-2">
+            <code class="block font-mono text-sm text-gray-200">
+              detector = cv2.CascadeClassifier(hcf_path)<br /><br />
+              model = CustomModel(7)<br />
+              model.load_state_dict(torch.load(model_path))<br />
+              model = model.to(device)
+            </code>
+            <!-- Comment: Initializes the Haar Cascade detector for face detection and loads a pre-trained 'CustomModel' with 7 output classes. The model weights are loaded from the saved file and transferred to the selected device. -->
+          </div>
+
+          <strong class="block mt-6">5. Setting the Model to Evaluation Mode:</strong>
+          <div class="bg-gray-700 p-3 rounded-md my-2">
+            <code class="block font-mono text-sm text-gray-200">
+              model.eval()
+            </code>
+            <!-- Comment: Sets the model to evaluation mode, which turns off dropout layers and batch normalization updates for consistent predictions. -->
+          </div>
+
+          <strong class="block mt-6">6. Defining Image Transformation:</strong>
+          <div class="bg-gray-700 p-3 rounded-md my-2">
+            <code class="block font-mono text-sm text-gray-200">
+              transform = transforms.Compose([<br />
+              &nbsp;&nbsp;&nbsp;transforms.Resize((128, 128)),<br />
+              &nbsp;&nbsp;&nbsp;transforms.ToTensor(),<br />
+              &nbsp;&nbsp;&nbsp;transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),<br />
+              ])
+            </code>
+            <!-- Comment: Creates a series of transformations to resize the input to 128x128, convert it to a tensor, and normalize based on ImageNet's RGB mean and standard deviation values. -->
+          </div>
+
+          <strong class="block mt-6">7. Defining Labels for Model Predictions:</strong>
+          <div class="bg-gray-700 p-3 rounded-md my-2">
+            <code class="block font-mono text-sm text-gray-200">
+              labels = ["angry", "disgust", "fear", "happy", "neutral", "sad", "surprise"]
+            </code>
+            <!-- Comment: Defines a list of emotion labels corresponding to each class output by the model. -->
+          </div>
+
+          <strong class="block mt-6">8. Detecting Faces in the Frame:</strong>
+          <div class="bg-gray-700 p-3 rounded-md my-2">
+            <code class="block font-mono text-sm text-gray-200">
+              faces = detector.detectMultiScale(frame, 1.1)
+            </code>
+            <!-- Comment: Detects faces within the input video frame. The 'detectMultiScale' function uses the Haar Cascade classifier to identify face regions with a scale factor of 1.1. -->
+          </div>
+
+          <strong class="block mt-6">9. Processing Each Detected Face:</strong>
+          <div class="bg-gray-700 p-3 rounded-md my-2">
+            <code class="block font-mono text-sm text-gray-200">
+              for x, y, w, h in faces:<br />
+              &nbsp;&nbsp;&nbsp;face = frame[y - 10 : y + h + 10, x - 10 : x + w + 10]
+            </code>
+            <!-- Comment: Iterates over each detected face, extracting and padding the face region slightly for better framing. -->
+          </div>
+
+          <strong class="block mt-6">10. Converting Face to Tensor and Predicting Emotion:</strong>
+          <div class="bg-gray-700 p-3 rounded-md my-2">
+            <code class="block font-mono text-sm text-gray-200">
+              img = Image.fromarray(face)<br />
+              img = transform(img).unsqueeze(0)<br />
+              img = img.to(device)
+            </code>
+            <!-- Comment: Converts the cropped face to a PIL Image, applies transformations, adds a batch dimension with unsqueeze, and sends the tensor to the computation device. -->
+          </div>
+
+          <div class="bg-gray-700 p-3 rounded-md my-2">
+            <code class="block font-mono text-sm text-gray-200">
+              with torch.no_grad():<br />
+              &nbsp;&nbsp;&nbsp;out = model(img)<br />
+              &nbsp;&nbsp;&nbsp;_, pred = torch.max(out, 1)
+            </code>
+            <!-- Comment: Disables gradient calculation for faster inference, then predicts the class label for the face by finding the maximum score. -->
+          </div>
+
+          <strong class="block mt-6">11. Drawing Predictions on the Frame:</strong>
+          <div class="bg-gray-700 p-3 rounded-md my-2">
+            <code class="block font-mono text-sm text-gray-200">
+              cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)<br /><br />
+              cv2.putText(<br />
+              &nbsp;&nbsp;&nbsp;frame,<br />
+              &nbsp;&nbsp;&nbsp;labels[pred],<br />
+              &nbsp;&nbsp;&nbsp;(x + w // 4, y - 10),<br />
+              &nbsp;&nbsp;&nbsp;cv2.FONT_HERSHEY_SIMPLEX,<br />
+              &nbsp;&nbsp;&nbsp;1,<br />
+              &nbsp;&nbsp;&nbsp;(255, 0, 0),<br />
+              &nbsp;&nbsp;&nbsp;3,<br />
+              )
+            </code>
+            <!-- Comment: Draws a rectangle around the detected face and places a label with the predicted emotion above the rectangle using OpenCV functions. -->
+          </div>
+
+          <strong class="block mt-6">12. Returning the Modified Frame:</strong>
+          <div class="bg-gray-700 p-3 rounded-md my-2">
+            <code class="block font-mono text-sm text-gray-200">
+              return frame
+            </code>
+            <!-- Comment: Returns the updated frame with face detection and emotion prediction annotations. -->
+          </div>
+        </p>
+      </div>
+    </div>
+  </article>
+</main>
+{% endblock %}

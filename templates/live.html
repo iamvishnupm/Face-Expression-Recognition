@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<main class="flex-grow flex flex-col items-center justify-center p-4">
+
+    <!-- Video container -->
+    <div class="bg-gray-800 rounded-lg shadow-lg border border-gray-700 p-4 w-3/4 mx-auto relative" style="aspect-ratio: 16/10;">
+        <video id="videoFeed" autoplay playsinline class="w-full h-full rounded bg-black object-cover"></video>
+    </div>
+    
+    <!-- Buttons container -->
+    <div class="flex justify-center space-x-4 mt-4">
+        <button id="startCamera" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+            Start Camera
+        </button>
+        <button id="stopCamera" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition">
+            Stop Camera
+        </button>
+    </div>
+</main>
+
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+    const videoFeed = document.getElementById('videoFeed');
+    const startCamera = document.getElementById('startCamera');
+    const stopCamera = document.getElementById('stopCamera');
+    let stream;
+    let intervalId;
+    
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    canvas.width = videoFeed.parentNode.clientWidth - 32;
+    canvas.height = videoFeed.parentNode.clientHeight - 32;
+    canvas.className = 'w-full h-full rounded object-cover';
+    videoFeed.parentNode.appendChild(canvas);
+
+    // Hide videoFeed and use canvas instead to show processed frames
+    videoFeed.style.display = "none"; 
+    canvas.style.display = "block";
+
+    // Start capturing video from the webcam
+    startCamera.addEventListener('click', async () => {
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            videoFeed.srcObject = stream;
+            
+            // Periodically send frames to the backend for processing
+            intervalId = setInterval(sendFrameToBackend, 1000 );  // Adjust interval for smoother performance
+        } catch (error) {
+            console.error('Error accessing the camera', error);
+        }
+    });
+
+// Stop capturing the webcam feed
+stopCamera.addEventListener('click', () => {
+    // Clear the canvas to remove the last image
+    context.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+
+    if (intervalId) {
+        clearInterval(intervalId);  // Stop sending frames
+        intervalId = null;  // Reset intervalId
+    }
+
+    if (stream) {
+        const tracks = stream.getTracks();
+        tracks.forEach(track => track.stop());  // Stop all video tracks
+        videoFeed.srcObject = null;  // Remove the video feed
+        stream = null;  // Reset stream
+    }
+});
+
+
+// Function to send video frames to the Django backend for processing
+async function sendFrameToBackend() {
+    // Check if the stream is still active before proceeding
+    if (!stream || !videoFeed.srcObject) {
+        return;  // Exit the function if the camera has been stopped
+    }
+
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = videoFeed.videoWidth;
+    tempCanvas.height = videoFeed.videoHeight;
+    const tempContext = tempCanvas.getContext('2d');
+    tempContext.drawImage(videoFeed, 0, 0, tempCanvas.width, tempCanvas.height);
+
+    // Convert canvas to image data
+    const imageData = tempCanvas.toDataURL('image/jpeg');
+
+    try {
+        const response = await fetch('/process_frame/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: JSON.stringify({ image: imageData }),
+        });
+        const result = await response.json();
+
+        // Update the canvas with the processed image
+        if (result.processed_image) {
+            const img = new Image();
+            img.src = 'data:image/jpeg;base64,' + result.processed_image;
+            img.onload = () => {
+                context.drawImage(img, 0, 0, canvas.width, canvas.height); // Draw on canvas
+            };
+        }
+    } catch (error) {
+        console.error('Error sending frame to backend:', error);
+    }
+}
+</script>
+{% endblock %}
+
+
+
+
+
+
+
+
+

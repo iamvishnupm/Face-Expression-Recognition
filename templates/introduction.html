@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block content %}
+<!-- Main Content -->
+<main class="container mx-auto px-4 py-8 max-w-4xl">
+    <!-- Article Container -->
+    <article class="bg-gray-800 rounded-lg shadow-lg p-8 border border-gray-700">
+        <!-- Title Section -->
+        <div class="mb-8">
+            <h2 class="text-3xl font-bold text-gray-100 mb-4">Introduction</h2>
+            <div class="text-gray-400">Date: <time>October 23, 2024</time></div> 
+        </div>
+
+        <div class="prose prose-invert max-w-none">
+            <!-- Example of how to structure article content -->
+            <div class="text-gray-100 space-y-6">
+                <p><p>
+                    In recent years, the field of emotion recognition has gained significant attention due to its wide range of applications, including human-computer interaction, mental health assessment, and personalized marketing. This project focuses on developing a deep learning model for face emotion recognition using the RAF-DB dataset, which contains 11,500 images categorized into 7 distinct emotional classes: happiness, sadness, anger, surprise, fear, disgust, and neutral.
+                </p>
+                <p>
+                    To achieve this, I employed the EfficientNet architecture, a state-of-the-art convolutional neural network known for its efficiency and performance in image classification tasks. The model consists of 212 layers, of which the first 148 layers were frozen to retain learned features from the pre-trained model, allowing the remaining layers to be fine-tuned for our specific task. I added 3 fully connected layers to enhance the model's capability to classify emotions accurately. Through rigorous training, I achieved an accuracy of 77%, demonstrating the effectiveness of the chosen architecture. While this accuracy shows promise, it may not be sufficient for real-world applications, potentially due to the limitations of the dataset and training parameters.
+                </p>
+                <p>
+                    One of the main challenges I faced was my initial lack of experience with PyTorch. However, I learned PyTorch specifically for this project to leverage GPU acceleration and significantly increase training speed. This transition allowed me to train the model for longer periods, which would have been less feasible with TensorFlow. Additionally, I had no prior knowledge of how to implement PyTorch in Django but successfully managed this integration myself, allowing for easy showcasing of the outcomes.
+                </p>
+                <p>
+                    I experimented with multiple models, including MobileNet, ResNet, and EfficientNet, ultimately selecting EfficientNet due to its superior performance in this context.
+                </p>
+                <p>
+                    <strong>Advantages of Emotion Recognition</strong>
+                </p>
+                <p>
+                    Emotion recognition systems can transform various domains by providing insights into human behavior. Some key advantages include:
+                </p>
+                <ul>
+                    <li><strong>Enhanced Human-Computer Interaction:</strong> Emotion-aware systems can adjust responses based on user emotions, leading to more intuitive and engaging interactions.</li>
+                    <li><strong>Mental Health Monitoring:</strong> These systems can aid in identifying emotional states, which can be beneficial for early detection and intervention in mental health issues.</li>
+                    <li><strong>Personalized Experiences:</strong> In marketing, emotion recognition can help tailor content to individual preferences, improving customer engagement and satisfaction.</li>
+                    <li><strong>Security Applications:</strong> Emotion recognition can enhance security measures by identifying suspicious behavior in real-time.</li>
+                </ul>
+                <p>
+                    <strong>Limitations Faced</strong>
+                </p>
+                <p>
+                    While this project showcases promising results, it faced several limitations that impacted the overall process:
+                </p>
+                <ul>
+                    <li><strong>Data Availability:</strong> The RAF-DB dataset, while extensive, may not capture the full diversity of human emotions across different demographics and lighting conditions, potentially affecting the model's generalizability.</li>
+                    <li><strong>System Specifications:</strong> The low-spec system used for training posed challenges in terms of processing power and memory, which limited the batch sizes and training iterations. This could lead to longer training times and potentially less optimal performance.</li>
+                </ul>
+                <p>
+                    <strong>Future Work</strong>
+                </p>
+                <p>
+                    Looking ahead, several enhancements could be pursued to improve the model’s performance and utility:
+                </p>
+                <ul>
+                    <li><strong>Exploring Different Architectures:</strong> Further experimentation with models like ResNet or other CNN variants to see if they yield better results.</li>
+                    <li><strong>Real-Time Emotion Detection:</strong> Implementing the model in real-time applications, such as video streams, to expand its usability.</li>
+                    <li><strong>Data Augmentation Techniques:</strong> Integrating various augmentation methods, such as rotation, flipping, or color adjustment, to enhance model robustness and performance.</li>
+                    <li><strong>Broader Datasets:</strong> Considering the inclusion of more diverse datasets for improved generalization and accuracy in different environments.</li>
+                </ul>
+                <p>
+                    Despite the challenges faced, this project demonstrates the potential of deep learning in emotion recognition and sets the stage for future enhancements.
+                </p>
+                </p> 
+                <!--
+                <figure class="my-8">
+                    <img 
+                        src="/api/placeholder/800/400" 
+                        alt="Description" 
+                        class="rounded-lg w-full border border-gray-700"
+                    />
+                    <figcaption class="mt-2 text-sm text-gray-400 text-center">
+                        Image caption goes here
+                    </figcaption>
+                </figure>
+ 
+                <h3 class="text-2xl font-bold text-gray-100 mt-8 mb-4">Section Heading</h3>
+                <p>More paragraphs...</p>
+                
+                <blockquote class="border-l-4 border-blue-500 pl-4 my-6 text-gray-300">
+                    Quote or important text goes here
+                </blockquote>
+            -->
+            </div>
+        </div>
+    </article>
+</main>
+{% endblock %}
